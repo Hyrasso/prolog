@@ -10,10 +10,8 @@ myplast(K, [K,_]).
 myplast(K, [_|T]) :- myplast(K, T).
 
 % p03
-element_at(X, T, I) :- elem_at(X, T, I, 1).
-
-elem_at(X, [X|_], I, C) :- I == C.
-elem_at(X, [_|T], I, C) :- C > 0, N is C + 1, elem_at(X, T, I, N).
+element_at([E|_], 0, E).
+element_at([_|T], I, E) :- NI is I - 1, element_at(T, NI, E).
 
 % p04
 len([], 0).
@@ -201,3 +199,48 @@ graym(N, L) :- N > 1, PN is N - 1, graym(PN, PL), extend([0], PL, L).
 % huffman_bits(CF, CM) :- huffman_tree(CF, HT), read_huffmane_tree(HT, CM).
 
 % huffman_tree(CF, HT) :- sorted(CF, ICF), inner_huffman_tree(ICF, HT).
+
+% p54
+is_tree(nil).
+is_tree(t(_, X, Y)) :- is_tree(X), is_tree(Y).
+
+% p55
+cbal_tree(0, nil).
+cbal_tree(1, t(_, nil, nil)).
+cbal_tree(C, T) :- C > 1, PC is C - 1, bal_distrib(PC, LC, RC), cbal_tree(LC, TL), cbal_tree(RC, TR), T = t(_, TL, TR).
+
+bal_distrib(T, R, R) :- divmod(T, 2, R, 0).
+bal_distrib(T, L, R) :- divmod(T, 2, R, 1), L is R + 1.
+bal_distrib(T, L, R) :- divmod(T, 2, L, 1), R is L + 1.
+
+% p56
+symmetric_tree(t(_, L, R)) :- symmetric_tree(L, R).
+symmetric_tree(nil, nil).
+% symmetric_tree(t(_, nil, nil), t(_, nil, nil)).
+% symmetric_tree(t(_, nil, LR), t(_, RL, nil)) :- symmetric_tree(LR, RL).
+% symmetric_tree(t(_, LL, nil), t(_, nil, RR)) :- symmetric_tree(LL, RR).
+symmetric_tree(t(_, LL, LR), t(_, RL, RR)) :- symmetric_tree(LL, RR), symmetric_tree(LR, RL).
+
+% p57
+construct_binary_tree(L, T) :- sort(L, SL), inner_construct_binary_tree(SL, T).
+
+inner_construct_binary_tree([], nil).
+inner_construct_binary_tree(L, t(E, TL, TR)) :-
+    median(L, E, LL, RR),
+    inner_construct_binary_tree(LL, TL),
+    inner_construct_binary_tree(RR, TR).
+
+median(Xs, E, LL, RR) :- len(Xs, L), divmod(L, 2, K, 1), split_at(Xs, K, E, LL, RR).
+median(Xs, E, LL, RR) :- len(Xs, L), divmod(L, 2, K, 0), PK is K - 1, between(PK, K, MK), split_at(Xs, MK, E, LL, RR).
+
+split_at([M|T], 0, M, [], T).
+split_at([X|T], MI, M, L, R) :- NMI is MI - 1, split_at(T, NMI, M, PL, R), [X|PL] = L.
+
+% p61
+count_leaves(nil, 0).
+count_leaves(t(_, nil, nil), 1) :- !.
+count_leaves(t(_, LT, RT), T) :- count_leaves(LT, CL), count_leaves(RT, CR), T is CL + CR.
+
+collect_leaves(nil, []).
+collect_leaves(t(X, nil, nil), [X]) :- !.
+collect_leaves(t(_, L, R), CL) :- collect_leaves(L, LL), collect_leaves(R, RL), extend(LL, RL, CL).
